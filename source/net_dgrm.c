@@ -1067,7 +1067,7 @@ ErrorReturn2:
     driver->CloseSocket(newsock);
     if (m_return_onerror) {
         key_dest = key_menu;
-        m_state = m_return_state;
+        //m_state = m_return_state;
         m_return_onerror = false;
     }
     return NULL;

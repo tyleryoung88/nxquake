@@ -30,9 +30,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ffsl __builtin_ffsl
 #endif
 
-#ifdef GLQUAKE
-#include <GLES2/gl2.h>
-#endif
+//#ifdef GLQUAKE
+//#include <GLES2/gl2.h>
+//#endif
 
 #include "bspfile.h"
 #include "modelgen.h"

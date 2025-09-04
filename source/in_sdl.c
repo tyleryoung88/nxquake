@@ -29,7 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "keys.h"
 #include "mathlib.h"
 #include "quakedef.h"
-#include "sdl_common.h"
 #include "sound.h"
 #include "sys.h"
 #include "vid.h"
@@ -605,8 +604,6 @@ static void IN_JoyMove(usercmd_t *cmd) {
 
 void IN_Init(void) {
     int err;
-
-    Q_SDL_InitOnce();
 
     err = SDL_InitSubSystem(SDL_INIT_JOYSTICK);
     if (err < 0) Sys_Error("IN: Couldn't load SDL: %s", SDL_GetError());

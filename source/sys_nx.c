@@ -64,6 +64,18 @@ static qboolean noconinput = false;
 static qboolean nostdout = false;
 #endif
 
+void userAppInit (void)
+{
+	socketInitializeDefault();
+}
+
+void userAppExit (void)
+{
+	if (SDL_WasInit(0))
+		SDL_Quit();
+	socketExit();
+}
+
 /*
  * ===========================================================================
  * General Routines
@@ -291,13 +303,9 @@ void Sys_MakeCodeWriteable(void *start_addr, void *end_addr) {
  * ===========================================================================
  */
 
-static inline int IsDir(const char *path) {
-    DIR *dir = opendir(path);
-    if (dir) { closedir(dir); return 1; }
-    return 0;
-}
-
 // looks like there's no way to disable the console in libnx, so we improvise
+
+extern void Sys_InitSDL (void);
 
 static void UnfuckStdout(void) {
     // consoleInit() has an internal static flag which makes it init devoptabs
@@ -308,74 +316,14 @@ static void UnfuckStdout(void) {
     devoptab_list[STD_ERR] = &dotab_stdnull;
 }
 
-static void SelectModRedraw(int selected, int nmods, char mods[][128]) {
-    int i;
-
-    consoleClear();
-    printf("\n    Select game directory");
-    printf("\n    =====================");
-    printf("\n\n");
-
-    for (i = 0; i < nmods; ++i) {
-        if (selected == i)
-            printf(" >  %s\n", mods[i]);
-        else
-            printf("    %s\n", mods[i]);
-    }
-
-    printf("\n\nDPAD to select, A to confirm\n");
-}
-
-static int SelectMod(int nmods, char mods[][128]) {
-    int i, selected;
-    u64 keys, oldkeys;
-
-    gfxInitDefault();
-    consoleInit(NULL);
-
-    oldkeys = keys = 0;
-    selected = 0;
-
-    SelectModRedraw(selected, nmods, mods);
-
-    while (appletMainLoop()) {
-        hidScanInput();
-        keys = hidKeysDown(CONTROLLER_P1_AUTO);
-
-        if (keys & KEY_A) {
-            break;
-        } else if ((keys & KEY_DOWN) && !(oldkeys & KEY_DOWN)) {
-            selected = (selected == nmods - 1) ? 0 : selected + 1;
-            SelectModRedraw(selected, nmods, mods);
-        } else if ((keys & KEY_UP) && !(oldkeys & KEY_UP)) {
-            selected = (selected == 0) ? nmods - 1 : selected - 1;
-            SelectModRedraw(selected, nmods, mods);
-        }
-
-        gfxFlushBuffers();
-        gfxSwapBuffers();
-        gfxWaitForVsync();
-
-        oldkeys = keys;
-    }
-
-    UnfuckStdout();
-    gfxExit();
-
-    return selected;
-}
-
 int Q_main(int argc, const char *argv[]);
 
 int main(int argc, char *argv[]) {
     static char *args[16];
-    static char fullpath[1024];
-    static char mods[20][128];
-    int nargs, i, nmods, havebase;
+    int i, nargs, havebase;
     DIR *dir;
     struct dirent *d;
 
-    socketInitializeDefault();
 #ifdef DEBUG
     nxlinkStdio();
 #endif
@@ -390,41 +338,13 @@ int main(int argc, char *argv[]) {
             args[i] = argv[i];
     }
 
-    // check for mods
-
-    nmods = 0;
-
     dir = opendir(QBASEDIR);
     if (!dir) Sys_Error("could not open `" QBASEDIR "`");
-
-    havebase = 0;
-    while ((d = readdir(dir))) {
-        if (!d->d_name || d->d_name[0] == '.') continue;
-
-        snprintf(fullpath, sizeof(fullpath)-1, QBASEDIR "/%s", d->d_name);
-        if (!IsDir(fullpath)) continue;
-
-        if (!havebase && !strncasecmp(d->d_name, "id1", 3))
-            havebase = 1;
-
-        strncpy(mods[nmods], d->d_name, 127);
-        if (++nmods >= 20) break; 
-    }
-
+    havebase = 1;
     closedir(dir);
 
     if (!havebase)
         Sys_Error("base game directory `id1` not found in `%s`", QBASEDIR);
-
-    // show a simple select menu if there's multiple mods
-
-    if (nmods > 1) {
-        i = SelectMod(nmods, mods);
-        if (strncasecmp(mods[i], "id1", 3)) {
-            args[nargs++] = "-game";
-            args[nargs++] = mods[i];
-        }
-    }
 
     args[nargs] = NULL;
 
@@ -455,7 +375,7 @@ int Q_main(int argc, const char **argv) {
     parms.argc = com_argc;
     parms.argv = com_argv;
     parms.basedir = QBASEDIR;
-    parms.memsize = Memory_GetSize();
+    parms.memsize = 64*1024*1024;
     parms.membase = malloc(parms.memsize);
     if (!parms.membase) Sys_Error("Allocation of %d byte heap failed", parms.memsize);
 
@@ -478,7 +398,9 @@ int Q_main(int argc, const char **argv) {
         printf("QuakeWorld -- TyrQuake Version %s\n", stringify(TYR_VERSION));
 #endif
 
+    Sys_InitSDL();
     Sys_Init();
+    appletLockExit ();
     Host_Init(&parms);
 #endif /* SERVERONLY */
 
@@ -525,8 +447,9 @@ int Q_main(int argc, const char **argv) {
 #endif
     }
 
-    socketExit();
-    if (SDL_WasInit(0))
-      SDL_Quit();
+    // due to appletLockExit, main loop will terminate if user exits via HOME
+	// so we clean shit up
+	Sys_Quit ();
+
     return 0;
 }

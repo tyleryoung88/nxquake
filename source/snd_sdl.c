@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "console.h"
 #include "quakedef.h"
-#include "sdl_common.h"
 #include "sound.h"
 #include "sys.h"
 
@@ -90,7 +89,6 @@ qboolean SNDDMA_Init(void) {
     desired.callback = paint_audio;
 
     /* Init the SDL Audio Sub-system */
-    Q_SDL_InitOnce();
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
         Con_Printf("Couldn't init SDL audio: %s\n", SDL_GetError());
         return false;

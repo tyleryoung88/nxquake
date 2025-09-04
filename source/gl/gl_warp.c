@@ -302,14 +302,14 @@ void EmitBothSkyLayers(msurface_t *fa) {
 
     EmitSkyPolys(fa);
 
-    qglEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     GL_Bind(t->gl_texturenum_alpha);
     speedscale = realtime * 16;
     speedscale -= (int)speedscale & ~127;
 
     EmitSkyPolys(fa);
 
-    qglDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 }
 
 /*
@@ -351,7 +351,7 @@ void R_DrawSkyChain(msurface_t *s) {
         for (fa = s; fa; fa = fa->texturechain)
             EmitSkyPolys(fa);
 
-        qglEnable(GL_BLEND);
+        glEnable(GL_BLEND);
         GL_Bind(t->gl_texturenum_alpha);
         speedscale = realtime * 16;
         speedscale -= (int)speedscale & ~127;
@@ -359,7 +359,7 @@ void R_DrawSkyChain(msurface_t *s) {
         for (fa = s; fa; fa = fa->texturechain)
             EmitSkyPolys(fa);
 
-        qglDisable(GL_BLEND);
+        glDisable(GL_BLEND);
     }
 }
 
@@ -392,7 +392,7 @@ void R_InitSky(texture_t *mt) {
 
     glGenTextures(1, &mt->gl_texturenum);
     GL_Bind(mt->gl_texturenum);
-    qglTexImage2D(GL_TEXTURE_2D, 0, gl_solid_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic32->pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, gl_solid_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic32->pixels);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -402,7 +402,7 @@ void R_InitSky(texture_t *mt) {
 
     glGenTextures(1, &mt->gl_texturenum_alpha);
     GL_Bind(mt->gl_texturenum_alpha);
-    qglTexImage2D(GL_TEXTURE_2D, 0, gl_alpha_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic32->pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, gl_alpha_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic32->pixels);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

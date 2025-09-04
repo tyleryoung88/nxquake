@@ -224,9 +224,24 @@ static void M_DrawTransPicTranslate(int x, int y, const qpic8_t *pic) {
 
 static int m_save_demonum;
 
-#ifdef QW_HACK
-enum { m_none, m_main, m_options, m_video, m_keys, m_quit } m_state;
-#endif
+enum {
+    m_none,
+    m_main,
+    m_singleplayer,
+    m_load,
+    m_save,
+    m_multiplayer,
+    m_setup,
+    m_options,
+    m_video,
+    m_keys,
+    m_help,
+    m_quit,
+    m_lanconfig,
+    m_gameoptions,
+    m_search,
+    m_slist
+} m_state;
 
 /*
 ================

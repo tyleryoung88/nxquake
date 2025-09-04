@@ -353,10 +353,10 @@ void R_RenderDlights(void) {
     r_dlightframecount = r_framecount + 1; // because the count hasn't
     //  advanced yet for this frame
     glDepthMask(0);
-    qglDisable(GL_TEXTURE_2D);
-    qglEnable(GL_COLOR); // QGL "extension"
+    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_COLOR); // QGL "extension"
     glShadeModel(GL_SMOOTH);
-    qglEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE);
 
     l = cl_dlights;
@@ -367,9 +367,9 @@ void R_RenderDlights(void) {
     }
 
     glColor3f(1, 1, 1);
-    qglDisable(GL_BLEND);
-    qglDisable(GL_COLOR); // QGL "extension"
-    qglEnable(GL_TEXTURE_2D);
+    glDisable(GL_BLEND);
+    glDisable(GL_COLOR); // QGL "extension"
+    glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDepthMask(1);
 }

@@ -214,7 +214,7 @@ static void R_DrawSpriteModel(const entity_t *entity) {
     GL_DisableMultitexture();
     GL_Bind(spritedata->texture);
 
-    qglEnable(GL_ALPHA_TEST);
+    glEnable(GL_ALPHA_TEST);
     glBegin(GL_QUADS);
 
     glTexCoord2f(0, 1);
@@ -239,7 +239,7 @@ static void R_DrawSpriteModel(const entity_t *entity) {
 
     glEnd();
 
-    qglDisable(GL_ALPHA_TEST);
+    glDisable(GL_ALPHA_TEST);
 }
 
 /*
@@ -855,12 +855,12 @@ static void R_AliasDrawModel(entity_t * entity) {
     if (r_shadows.value) {
         glPushMatrix();
         R_RotateForEntity(origin, angles);
-        qglDisable(GL_TEXTURE_2D);
-        qglEnable(GL_BLEND);
+        glDisable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
         glColor4f(0, 0, 0, 0.5);
         GL_AliasDrawShadow(entity, aliashdr, lastposenum);
-        qglEnable(GL_TEXTURE_2D);
-        qglDisable(GL_BLEND);
+        glEnable(GL_TEXTURE_2D);
+        glDisable(GL_BLEND);
         glColor4f(1, 1, 1, 1);
         glPopMatrix();
     }
@@ -1052,10 +1052,10 @@ static void R_PolyBlend(void) {
     if ((gl_polyblend.value && v_blend[3]) || gamma < 1.0) {
         GL_DisableMultitexture();
 
-        qglDisable(GL_ALPHA_TEST);
-        qglEnable(GL_BLEND);
-        qglDisable(GL_DEPTH_TEST);
-        qglDisable(GL_TEXTURE_2D);
+        glDisable(GL_ALPHA_TEST);
+        glEnable(GL_BLEND);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_TEXTURE_2D);
 
         glLoadIdentity();
         glRotatef(-90, 1, 0, 0); // put Z going up
@@ -1072,9 +1072,9 @@ static void R_PolyBlend(void) {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
 
-        qglDisable(GL_BLEND);
-        qglEnable(GL_TEXTURE_2D);
-        qglEnable(GL_ALPHA_TEST);
+        glDisable(GL_BLEND);
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_ALPHA_TEST);
     }
 }
 
@@ -1243,19 +1243,19 @@ static void R_SetupGL(void) {
     glRotatef(-r_refdef.viewangles[1], 0, 0, 1);
     glTranslatef(-r_refdef.vieworg[0], -r_refdef.vieworg[1], -r_refdef.vieworg[2]);
 
-    qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
+    glGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
 
     //
     // set drawing parms
     //
     if (gl_cull.value)
-        qglEnable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
     else
-        qglDisable(GL_CULL_FACE);
+        glDisable(GL_CULL_FACE);
 
-    qglDisable(GL_BLEND);
-    qglDisable(GL_ALPHA_TEST);
-    qglEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glDisable(GL_ALPHA_TEST);
+    glEnable(GL_DEPTH_TEST);
 }
 
 /*
@@ -1375,7 +1375,7 @@ static void R_Mirror(void) {
     glDepthFunc(GL_LEQUAL);
 
     // blend on top
-    qglEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     glMatrixMode(GL_PROJECTION);
     if (mirror_plane->normal[2])
         glScalef(1, -1, 1);
@@ -1391,7 +1391,7 @@ static void R_Mirror(void) {
     for (; s; s = s->texturechain)
         R_RenderBrushPoly(&r_worldentity, s);
     cl.worldmodel->textures[mirrortexturenum]->texturechain = NULL;
-    qglDisable(GL_BLEND);
+    glDisable(GL_BLEND);
     glColor4f(1, 1, 1, 1);
 }
 #endif

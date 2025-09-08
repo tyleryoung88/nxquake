@@ -262,7 +262,7 @@ lpMultiTexFUNC qglMultiTexCoord2fARB = NULL;
 lpActiveTextureFUNC qglActiveTextureARB = NULL;
 
 static qboolean mtexenabled = false;
-static GLenum oldtarget = GL_TEXTURE0_ARB;
+static GLenum oldtarget = GL_TEXTURE0;
 static int cnttextures[2] = {-1, -1}; // cached
 
 /*
@@ -278,23 +278,23 @@ void GL_SelectTexture(GLenum target) {
      * unit and update currenttexture
      */
     qglActiveTextureARB(target);
-    cnttextures[oldtarget - GL_TEXTURE0_ARB] = currenttexture;
-    currenttexture = cnttextures[target - GL_TEXTURE0_ARB];
+    cnttextures[oldtarget - GL_TEXTURE0] = currenttexture;
+    currenttexture = cnttextures[target - GL_TEXTURE0];
     oldtarget = target;
 }
 
 void GL_DisableMultitexture(void) {
     if (mtexenabled) {
-        qglDisable(GL_TEXTURE_2D);
-        GL_SelectTexture(GL_TEXTURE0_ARB);
+        glDisable(GL_TEXTURE_2D);
+        GL_SelectTexture(GL_TEXTURE0);
         mtexenabled = false;
     }
 }
 
 void GL_EnableMultitexture(void) {
     if (gl_mtexable) {
-        GL_SelectTexture(GL_TEXTURE1_ARB);
-        qglEnable(GL_TEXTURE_2D);
+        GL_SelectTexture(GL_TEXTURE1);
+        glEnable(GL_TEXTURE_2D);
         mtexenabled = true;
     }
 }
@@ -337,8 +337,8 @@ static void DrawGLPoly_2Ply(glpoly_t *p) {
     glBegin(GL_TRIANGLE_FAN);
     v = p->verts[0];
     for (i = 0; i < p->numverts; i++, v += VERTEXSIZE) {
-        qglMultiTexCoord2fARB(GL_TEXTURE0_ARB, v[3], v[4]);
-        qglMultiTexCoord2fARB(GL_TEXTURE1_ARB, v[5], v[6]);
+        qglMultiTexCoord2fARB(GL_TEXTURE0, v[3], v[4]);
+        qglMultiTexCoord2fARB(GL_TEXTURE1, v[5], v[6]);
         glVertex3fv(v);
     }
     glEnd();
@@ -465,7 +465,7 @@ static void R_BlendLightmaps(void) {
     }
 
     if (!r_lightmap.value) {
-        qglEnable(GL_BLEND);
+        glEnable(GL_BLEND);
     }
 
     for (i = 0; i < MAX_LM_BLOCKS; i++) {
@@ -485,7 +485,7 @@ static void R_BlendLightmaps(void) {
         }
     }
 
-    qglDisable(GL_BLEND);
+    glDisable(GL_BLEND);
     if (gl_lightmap_format == GL_LUMINANCE)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     else if (gl_lightmap_format == GL_INTENSITY) {
@@ -565,7 +565,7 @@ void R_RenderBrushPoly(const entity_t *e, msurface_t *fa) {
     }
 
     if (gl_mtexable) {
-        GL_SelectTexture(GL_TEXTURE0_ARB);
+        GL_SelectTexture(GL_TEXTURE0);
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     }
     t = R_TextureAnimation(e, fa->texinfo->texture);
@@ -638,7 +638,7 @@ void R_DrawWaterSurfaces(void) {
     glLoadMatrixf(r_world_matrix);
 
     if (r_wateralpha.value < 1.0) {
-        qglEnable(GL_BLEND);
+        glEnable(GL_BLEND);
         glColor4f(1, 1, 1, r_wateralpha.value);
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     }
@@ -666,7 +666,7 @@ void R_DrawWaterSurfaces(void) {
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
         glColor4f(1, 1, 1, 1);
-        qglDisable(GL_BLEND);
+        glDisable(GL_BLEND);
     }
 }
 
@@ -729,7 +729,7 @@ static void DrawFlatTextureChains(void) {
     texture_t *t;
 
     GL_DisableMultitexture();
-    qglDisable(GL_TEXTURE_2D);
+    glDisable(GL_TEXTURE_2D);
 
     for (i = 0; i < cl.worldmodel->numtextures; i++) {
 
@@ -760,7 +760,7 @@ static void DrawFlatTextureChains(void) {
         t->texturechain = NULL;
     }
 
-    qglEnable(GL_TEXTURE_2D);
+    glEnable(GL_TEXTURE_2D);
     glColor3f(1, 1, 1);
 }
 
@@ -818,7 +818,7 @@ void R_DrawBrushModel(const entity_t *e) {
     surf = &brushmodel->surfaces[brushmodel->firstmodelsurface];
 
     if (gl_zfix.value)
-        qglEnable(GL_POLYGON_OFFSET_FILL);
+        glEnable(GL_POLYGON_OFFSET_FILL);
 
     glPushMatrix();
     /* Stupid bug means pitch is reversed for entities */
@@ -847,7 +847,7 @@ void R_DrawBrushModel(const entity_t *e) {
      * draw texture
      */
     if (r_drawflat.value)
-        qglDisable(GL_TEXTURE_2D);
+        glDisable(GL_TEXTURE_2D);
     else
         glColor3f(1, 1, 1);
 
@@ -872,7 +872,7 @@ void R_DrawBrushModel(const entity_t *e) {
     }
 
     if (r_drawflat.value) {
-        qglEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_2D);
         glColor3f(1, 1, 1);
     } else {
         R_BlendLightmaps();
@@ -881,7 +881,7 @@ void R_DrawBrushModel(const entity_t *e) {
     glPopMatrix();
 
     if (gl_zfix.value)
-        qglDisable(GL_POLYGON_OFFSET_FILL);
+        glDisable(GL_POLYGON_OFFSET_FILL);
 }
 
 /*
@@ -1005,7 +1005,7 @@ void R_DrawWorld(void) {
 
     if (r_drawflat.value || _gl_drawhull.value) {
         GL_DisableMultitexture();
-        qglDisable(GL_TEXTURE_2D);
+        glDisable(GL_TEXTURE_2D);
     }
 
     if (_gl_drawhull.value) {
@@ -1019,7 +1019,7 @@ void R_DrawWorld(void) {
             /* FIXME: Error? should never happen... */
             break;
         }
-        qglEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_2D);
         glColor3f(1.0, 1.0, 1.0);
     } else {
         R_RecursiveWorldNode(cl.worldmodel->nodes);
@@ -1286,7 +1286,7 @@ void GL_BuildLightmaps(void *hunkbase) {
         GL_Bind(block->texture);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        qglTexImage2D(GL_TEXTURE_2D, 0, gl_lightmap_format, BLOCK_WIDTH, BLOCK_HEIGHT, 0, gl_lightmap_format,
+        glTexImage2D(GL_TEXTURE_2D, 0, gl_lightmap_format, BLOCK_WIDTH, BLOCK_HEIGHT, 0, gl_lightmap_format,
                       GL_UNSIGNED_BYTE, block->data);
     }
     t2 = Sys_DoubleTime();

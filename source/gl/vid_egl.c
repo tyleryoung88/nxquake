@@ -221,6 +221,15 @@ static void VID_InitGL(void) {
 
     eglSwapInterval(s_display, 1);
 
+    int version = gladLoadGL(eglGetProcAddress);
+    if (version == 0) {
+        printf("Failed to initialize OpenGL context\n");
+        return;
+    }
+
+    // Successfully loaded OpenGL
+    printf("Loaded OpenGL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
+
     gl_vendor = (const char *)glGetString(GL_VENDOR);
     gl_renderer = (const char *)glGetString(GL_RENDERER);
     gl_version = (const char *)glGetString(GL_VERSION);
@@ -231,13 +240,9 @@ static void VID_InitGL(void) {
     Con_Printf("GL_VERSION: %s\n", gl_version);
     Con_Printf("GL_EXTENSIONS: %s\n", gl_extensions);
 
-    qglMultiTexCoord2fARB = NULL;
-    qglActiveTextureARB = NULL;
     gl_mtexable = false;
 
-    GL_ExtensionCheck_NPoT();
-
-    QGL_Init();
+    //GL_ExtensionCheck_NPoT();
 
     glCullFace(GL_FRONT);
     glEnable(GL_TEXTURE_2D);
@@ -314,7 +319,6 @@ void VID_Init(const byte *palette) {
 
 void VID_Shutdown(void) {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
-    QGL_Deinit ();
 	DeinitEGL();
 }
 

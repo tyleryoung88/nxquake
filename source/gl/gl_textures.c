@@ -186,7 +186,7 @@ static void GL_Upload32(qpic32_t *pic, qboolean mipmap, qboolean alpha) {
     if (mipmap) {
         int miplevel = 0;
         while (1) {
-            qglTexImage2D(GL_TEXTURE_2D, miplevel, format, scaled->width, scaled->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+            glTexImage2D(GL_TEXTURE_2D, miplevel, format, scaled->width, scaled->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                           scaled->pixels);
             if (scaled->width == 1 && scaled->height == 1)
                 break;
@@ -197,7 +197,7 @@ static void GL_Upload32(qpic32_t *pic, qboolean mipmap, qboolean alpha) {
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glmode->min_filter);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glmode->mag_filter);
     } else {
-        qglTexImage2D(GL_TEXTURE_2D, 0, format, scaled->width, scaled->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+        glTexImage2D(GL_TEXTURE_2D, 0, format, scaled->width, scaled->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                       scaled->pixels);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glmode->mag_filter);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glmode->mag_filter);

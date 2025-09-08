@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef GLQUAKE_H
 #define GLQUAKE_H
 
-#include <GLES2/gl2.h>
+//#include <GLES2/gl2.h>
 
 #include "client.h"
 #include "model.h"
@@ -239,12 +239,6 @@ void R_DrawSkyChain(msurface_t *s);
 //
 
 void GL_Set2D(void);
-
-//
-// gl_stuff.c
-//
-
-#include "glstuff.h"
 
 //
 // gl_rmain.c

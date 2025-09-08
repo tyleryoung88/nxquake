@@ -716,11 +716,11 @@ void R_DrawParticles(void) {
 #endif
     GL_Bind(particletexture);
 
-    alphaTestEnabled = qglIsEnabled(GL_ALPHA_TEST);
+    alphaTestEnabled = glIsEnabled(GL_ALPHA_TEST);
     if (alphaTestEnabled)
-        qglDisable(GL_ALPHA_TEST);
+        glDisable(GL_ALPHA_TEST);
 
-    qglEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glDepthMask(GL_FALSE);
 
@@ -771,9 +771,9 @@ void R_DrawParticles(void) {
 #ifdef GLQUAKE
     glEnd();
     glDepthMask(GL_TRUE);
-    qglDisable(GL_BLEND);
+    glDisable(GL_BLEND);
     if (alphaTestEnabled)
-        qglEnable(GL_ALPHA_TEST);
+        glEnable(GL_ALPHA_TEST);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 #else
     D_EndParticles();

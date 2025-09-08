@@ -1271,7 +1271,7 @@ void COM_WriteFile(const char *filename, const void *data, int len) {
     FILE *f;
     char name[MAX_OSPATH];
 
-    snprintf(name, sizeof(name), "%s/%s", com_gamedir, filename);
+    snprintf(name, sizeof(name)+1, "%s/%s", com_gamedir, filename);
 
     f = fopen(name, "wb");
     if (!f) {
@@ -1351,7 +1351,7 @@ int COM_FOpenFile(const char *filename, FILE **file) {
                 // if not a registered version, don't ever go beyond base
                 if (strchr(filename, '/') || strchr(filename, '\\')) continue;
             }
-            snprintf(path, sizeof(path), "%s/%s", search->filename, filename);
+            snprintf(path, sizeof(path)+1, "%s/%s", search->filename, filename);
             findtime = Sys_FileTime(path);
             if (findtime == -1) continue;
 
@@ -1450,7 +1450,7 @@ void COM_ScanDir(struct stree_root *root, const char *path, const char *pfx, con
         if (search->pack) {
             COM_ScanDirPak(root, search->pack, path, pfx, ext, stripext);
         } else {
-            snprintf(fullpath, MAX_OSPATH, "%s/%s", search->filename, path);
+            snprintf(fullpath, MAX_OSPATH+1, "%s/%s", search->filename, path);
             fullpath[MAX_OSPATH - 1] = '\0';
             dir = opendir(fullpath);
             if (dir) {

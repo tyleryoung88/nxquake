@@ -145,6 +145,4 @@ struct stree_root *Cvar_ArgCompletions(const char *name, const char *buf);
 cvar_t *Cvar_NextServerVar(const char *var_name);
 #endif
 
-struct stree_root cvar_tree;
-
 #endif /* CVAR_H */

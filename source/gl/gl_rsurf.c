@@ -285,7 +285,7 @@ void GL_SelectTexture(GLenum target) {
 
 void GL_DisableMultitexture(void) {
     if (mtexenabled) {
-        glDisable(GL_TEXTURE_2D);
+        qglDisable(GL_TEXTURE_2D);
         GL_SelectTexture(GL_TEXTURE0_ARB);
         mtexenabled = false;
     }
@@ -294,7 +294,7 @@ void GL_DisableMultitexture(void) {
 void GL_EnableMultitexture(void) {
     if (gl_mtexable) {
         GL_SelectTexture(GL_TEXTURE1_ARB);
-        glEnable(GL_TEXTURE_2D);
+        qglEnable(GL_TEXTURE_2D);
         mtexenabled = true;
     }
 }
@@ -465,7 +465,7 @@ static void R_BlendLightmaps(void) {
     }
 
     if (!r_lightmap.value) {
-        glEnable(GL_BLEND);
+        qglEnable(GL_BLEND);
     }
 
     for (i = 0; i < MAX_LM_BLOCKS; i++) {
@@ -485,7 +485,7 @@ static void R_BlendLightmaps(void) {
         }
     }
 
-    glDisable(GL_BLEND);
+    qglDisable(GL_BLEND);
     if (gl_lightmap_format == GL_LUMINANCE)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     else if (gl_lightmap_format == GL_INTENSITY) {
@@ -638,7 +638,7 @@ void R_DrawWaterSurfaces(void) {
     glLoadMatrixf(r_world_matrix);
 
     if (r_wateralpha.value < 1.0) {
-        glEnable(GL_BLEND);
+        qglEnable(GL_BLEND);
         glColor4f(1, 1, 1, r_wateralpha.value);
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     }
@@ -666,7 +666,7 @@ void R_DrawWaterSurfaces(void) {
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
         glColor4f(1, 1, 1, 1);
-        glDisable(GL_BLEND);
+        qglDisable(GL_BLEND);
     }
 }
 
@@ -729,7 +729,7 @@ static void DrawFlatTextureChains(void) {
     texture_t *t;
 
     GL_DisableMultitexture();
-    glDisable(GL_TEXTURE_2D);
+    qglDisable(GL_TEXTURE_2D);
 
     for (i = 0; i < cl.worldmodel->numtextures; i++) {
 
@@ -760,7 +760,7 @@ static void DrawFlatTextureChains(void) {
         t->texturechain = NULL;
     }
 
-    glEnable(GL_TEXTURE_2D);
+    qglEnable(GL_TEXTURE_2D);
     glColor3f(1, 1, 1);
 }
 
@@ -818,7 +818,7 @@ void R_DrawBrushModel(const entity_t *e) {
     surf = &brushmodel->surfaces[brushmodel->firstmodelsurface];
 
     if (gl_zfix.value)
-        glEnable(GL_POLYGON_OFFSET_FILL);
+        qglEnable(GL_POLYGON_OFFSET_FILL);
 
     glPushMatrix();
     /* Stupid bug means pitch is reversed for entities */
@@ -847,7 +847,7 @@ void R_DrawBrushModel(const entity_t *e) {
      * draw texture
      */
     if (r_drawflat.value)
-        glDisable(GL_TEXTURE_2D);
+        qglDisable(GL_TEXTURE_2D);
     else
         glColor3f(1, 1, 1);
 
@@ -872,7 +872,7 @@ void R_DrawBrushModel(const entity_t *e) {
     }
 
     if (r_drawflat.value) {
-        glEnable(GL_TEXTURE_2D);
+        qglEnable(GL_TEXTURE_2D);
         glColor3f(1, 1, 1);
     } else {
         R_BlendLightmaps();
@@ -881,7 +881,7 @@ void R_DrawBrushModel(const entity_t *e) {
     glPopMatrix();
 
     if (gl_zfix.value)
-        glDisable(GL_POLYGON_OFFSET_FILL);
+        qglDisable(GL_POLYGON_OFFSET_FILL);
 }
 
 /*
@@ -1005,7 +1005,7 @@ void R_DrawWorld(void) {
 
     if (r_drawflat.value || _gl_drawhull.value) {
         GL_DisableMultitexture();
-        glDisable(GL_TEXTURE_2D);
+        qglDisable(GL_TEXTURE_2D);
     }
 
     if (_gl_drawhull.value) {
@@ -1019,7 +1019,7 @@ void R_DrawWorld(void) {
             /* FIXME: Error? should never happen... */
             break;
         }
-        glEnable(GL_TEXTURE_2D);
+        qglEnable(GL_TEXTURE_2D);
         glColor3f(1.0, 1.0, 1.0);
     } else {
         R_RecursiveWorldNode(cl.worldmodel->nodes);
@@ -1286,7 +1286,7 @@ void GL_BuildLightmaps(void *hunkbase) {
         GL_Bind(block->texture);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, gl_lightmap_format, BLOCK_WIDTH, BLOCK_HEIGHT, 0, gl_lightmap_format,
+        qglTexImage2D(GL_TEXTURE_2D, 0, gl_lightmap_format, BLOCK_WIDTH, BLOCK_HEIGHT, 0, gl_lightmap_format,
                       GL_UNSIGNED_BYTE, block->data);
     }
     t2 = Sys_DoubleTime();

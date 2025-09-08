@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef QUAKEDEF_H
 #define QUAKEDEF_H
 
-#include "../include/glad/gl.h"  // glad library (OpenGL loader)
-
 #include <inttypes.h>
 #include <math.h>
 #include <setjmp.h>

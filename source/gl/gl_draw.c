@@ -616,7 +616,7 @@ void Draw_TransPicTranslate(int x, int y, const qpic8_t *pic, byte *translation)
         }
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, gl_alpha_format, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+    qglTexImage2D(GL_TEXTURE_2D, 0, gl_alpha_format, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -646,8 +646,8 @@ static void Draw_ConsolePic(int lines, float offset, const qpic8_t *pic, float a
     glpic = const_container_of(pic, glpic_t, pic);
     Scrap_Flush(glpic->texnum);
 
-    glDisable(GL_ALPHA_TEST);
-    glEnable(GL_BLEND);
+    qglDisable(GL_ALPHA_TEST);
+    qglEnable(GL_BLEND);
     glCullFace(GL_FRONT);
     glColor4f(1, 1, 1, alpha);
     GL_Bind(glpic->texnum);
@@ -664,8 +664,8 @@ static void Draw_ConsolePic(int lines, float offset, const qpic8_t *pic, float a
     glEnd();
 
     glColor4f(1, 1, 1, 1);
-    glEnable(GL_ALPHA_TEST);
-    glDisable(GL_BLEND);
+    qglEnable(GL_ALPHA_TEST);
+    qglDisable(GL_BLEND);
 }
 
 void Draw_ConsoleBackground(int lines) {
@@ -735,7 +735,7 @@ Fills a box of pixels with a single color
 =============
 */
 void Draw_Fill(int x, int y, int w, int h, int c) {
-    glDisable(GL_TEXTURE_2D);
+    qglDisable(GL_TEXTURE_2D);
     glColor3f(host_basepal[c * 3] / 255.0, host_basepal[c * 3 + 1] / 255.0, host_basepal[c * 3 + 2] / 255.0);
 
     glBegin(GL_QUADS);
@@ -747,7 +747,7 @@ void Draw_Fill(int x, int y, int w, int h, int c) {
 
     glEnd();
     glColor3f(1, 1, 1);
-    glEnable(GL_TEXTURE_2D);
+    qglEnable(GL_TEXTURE_2D);
 }
 
 //=============================================================================
@@ -759,8 +759,8 @@ Draw_FadeScreen
 ================
 */
 void Draw_FadeScreen(void) {
-    glEnable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
+    qglEnable(GL_BLEND);
+    qglDisable(GL_TEXTURE_2D);
     glColor4f(0, 0, 0, 0.8);
     glBegin(GL_QUADS);
 
@@ -771,8 +771,8 @@ void Draw_FadeScreen(void) {
 
     glEnd();
     glColor4f(1, 1, 1, 1);
-    glEnable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
+    qglEnable(GL_TEXTURE_2D);
+    qglDisable(GL_BLEND);
 
     Sbar_Changed();
 }
@@ -819,11 +819,11 @@ void GL_Set2D(void) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_BLEND);
-    glEnable(GL_ALPHA_TEST);
-    //      glDisable(GL_ALPHA_TEST);
+    qglDisable(GL_DEPTH_TEST);
+    qglDisable(GL_CULL_FACE);
+    qglDisable(GL_BLEND);
+    qglEnable(GL_ALPHA_TEST);
+    //      qglDisable(GL_ALPHA_TEST);
 
     glColor4f(1, 1, 1, 1);
 }

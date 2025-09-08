@@ -744,6 +744,8 @@ int Cmd_CheckParm(const char *parm) {
     return 0;
 }
 
+extern struct stree_root cvar_tree;
+
 struct stree_root *Cmd_CommandCompletions(const char *buf) {
     struct stree_root *root;
 

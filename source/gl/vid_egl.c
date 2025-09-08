@@ -72,25 +72,16 @@ void D_EndDirectRect(int x, int y, int width, int height) {}
 
 void Sys_SendKeyEvents(void) { IN_ProcessEvents(); }
 
-static void VID_InitModeList(void) {}
-
-static SDL_Window	*draw_context;
-static SDL_Renderer	*draw_renderer;
-
-static EGLDisplay s_display;
-static EGLSurface s_surface;
-static EGLContext s_context;
-
 const char *gl_vendor;
 const char *gl_renderer;
 const char *gl_version;
 const char *gl_extensions = NULL;
 
-static int gl_num_texture_units;
-
 static void setMesaConfig() {
     // Uncomment below to disable error checking and save CPU time (useful for
     // production): setenv("MESA_NO_ERROR", "1", 1);
+
+    setenv("MESA_GL_VERSION_OVERRIDE", "3.2COMPAT", 1);
 
 #ifdef GPUDEBUG
     setenv("EGL_LOG_LEVEL", "debug", 1);
@@ -103,8 +94,6 @@ static void setMesaConfig() {
 #endif
 }
 
-NWindow *win = NULL;
-
 void Sys_InitSDL (void)
 {
 	SDL_version v;
@@ -112,116 +101,89 @@ void Sys_InitSDL (void)
 	SDL_GetVersion(&v);
 
 	Sys_Printf("Found SDL version %i.%i.%i\n",sdl_version->major,sdl_version->minor,sdl_version->patch);
-
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		Sys_Error("Couldn't init SDL: %s", SDL_GetError());
-	}
-
-	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN;
-	draw_context = SDL_CreateWindow ("TyrQuakeNX", 0, 0, 1280, 720, flags);
-
-	if (!draw_context) {
-		Sys_Error ("SDLINIT: SDL_CreateWindow: Couldn't create window | %s", SDL_GetError());
-	}
-
-    // --- Initialize Nintendo Switch native window ---
-    // Initialize applet + video interface
-    appletInitialize();
-    Result rc = viInitialize(ViServiceType_Default);
-
-    if (R_FAILED(rc))
-        Sys_Error("viInitialize failed: 0x%x", rc);
-
-    // Open the default display
-    ViDisplay display;
-    viOpenDefaultDisplay(&display);
-
-    // Create a layer
-    ViLayer layer;
-    viCreateLayer(&display, &layer);
-
-    // Create an NWindow from the layer
-    nwindowCreateFromLayer(win, &layer);
-
-    // Set dimensions (match SDL window size)
-    nwindowSetDimensions(win, 1280, 720);
 }
 
-static void CreateUselessSDLWindow (void)
+EGLDisplay s_display;
+EGLSurface s_surface;
+EGLContext s_context;
+
+static qboolean InitEGL (NWindow *input_win)
 {
-	int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN;
-	draw_context = SDL_CreateWindow("", 0, 0, 1280, 720, flags);
-	if (!draw_context) printf("draw_context == NULL!\n%s\n", SDL_GetError());
-	draw_renderer = SDL_CreateRenderer(draw_context, -1, 0);
-	if (!draw_renderer) printf("draw_renderer == NULL!\n%s\n", SDL_GetError());
-}
+	// Connect to the EGL default display
+	s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	if (!s_display)
+	{
+		Sys_Error("Could not connect to display! error: %d", eglGetError());
+		goto _fail0;
+	}
 
-static qboolean InitEGL(NWindow* win) {
-    s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (!s_display) {
-        Sys_Error("Could not connect to display! error: %d", eglGetError());
-        goto _fail0;
-    }
+	// Initialize the EGL display connection
+	eglInitialize(s_display, NULL, NULL);
 
-    EGLint major, minor;
-    if (!eglInitialize(s_display, &major, &minor)) {
-        Sys_Error("EGL init failed, error: %d", eglGetError());
-        goto _fail0;
-    }
-    printf("EGL version %d.%d\n", major, minor);
+	if (eglBindAPI(EGL_OPENGL_API) == EGL_FALSE)
+	{
+		Sys_Error("Could not set API! error: %d", eglGetError());
+		goto _fail1;
+	}
 
-    if (eglBindAPI(EGL_OPENGL_API) == EGL_FALSE) {
-        Sys_Error("Could not set GL API! error: %d", eglGetError());
-        goto _fail1;
-    }
-
-    EGLConfig config;
-    EGLint numConfigs;
-    static const EGLint framebufferAttributeList[] = {
-        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_RED_SIZE, 8,
-        EGL_GREEN_SIZE, 8,
-        EGL_BLUE_SIZE, 8,
-        EGL_DEPTH_SIZE, 24,
-        EGL_STENCIL_SIZE, 8,
-        EGL_NONE
-    };
-    if (!eglChooseConfig(s_display, framebufferAttributeList, &config, 1, &numConfigs) || numConfigs == 0) {
-        Sys_Error("EGL: No config found! error: %d", eglGetError());
-        goto _fail1;
-    }
-
-    s_surface = eglCreateWindowSurface(s_display, config, win, NULL);
-    if (!s_surface) {
-        Sys_Error("EGL: Surface creation failed! error: %d", eglGetError());
-        goto _fail1;
-    }
-
-    static const EGLint contextAttributeList[] = {
-        EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT,
+	// Get an appropriate EGL framebuffer configuration
+	EGLConfig config;
+	EGLint numConfigs;
+	static const EGLint attributeList[] =
+	{
+		EGL_RED_SIZE, 8,
+		EGL_GREEN_SIZE, 8,
+		EGL_BLUE_SIZE, 8,
+		EGL_DEPTH_SIZE, 24,
 		EGL_NONE
-    };
-    s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, contextAttributeList);
-    if (!s_context) {
-        Sys_Error("EGL: Context creation failed! error: %d", eglGetError());
-        goto _fail2;
-    }
+	};
+	eglChooseConfig(s_display, attributeList, &config, 1, &numConfigs);
+	if (numConfigs == 0)
+	{
+		Sys_Error("No config found! error: %d", eglGetError());
+		goto _fail1;
+	}
 
-    if (!eglMakeCurrent(s_display, s_surface, s_surface, s_context)) {
-        Sys_Error("eglMakeCurrent failed! error: %d", eglGetError());
-        goto _fail2;
-    }
 
-    return true;
+	// Create an EGL window surface
+	s_surface = eglCreateWindowSurface(s_display, config, input_win, NULL);
+	
+	if (!s_surface)
+	{
+		Sys_Error("Surface creation failed! error: %d", eglGetError());
+		goto _fail1;
+	}
+
+	static const EGLint ctxAttributeList[] = 
+	{
+		EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT,
+		EGL_NONE
+	};
+
+
+	// Create an EGL rendering context
+	s_context = eglCreateContext(s_display, config, EGL_NO_CONTEXT, ctxAttributeList);
+	if (!s_context)
+	{
+		Sys_Error("Context creation failed! error: %d", eglGetError());
+		goto _fail2;
+	}
+
+
+	// Connect the context to the surface
+	eglMakeCurrent(s_display, s_surface, s_surface, s_context);
+
+
+	return true;
 
 _fail2:
-    eglDestroySurface(s_display, s_surface);
-    s_surface = NULL;
+	eglDestroySurface(s_display, s_surface);
+	s_surface = NULL;
 _fail1:
-    eglTerminate(s_display);
-    s_display = NULL;
+	eglTerminate(s_display);
+	s_display = NULL;
 _fail0:
-    return false;
+	return false;
 }
 
 static void DeinitEGL(void) {
@@ -240,44 +202,54 @@ static void DeinitEGL(void) {
     }
 }
 
-static qboolean VID_GL_CheckExtn(const char *extn) {
-    const char *found;
-    const int len = strlen(extn);
-    char nextc;
-
-    found = strstr(gl_extensions, extn);
-    while (found) {
-        nextc = found[len];
-        if (nextc == ' ' || !nextc)
-            return true;
-        found = strstr(found + len, extn);
-    }
-
-    return false;
-}
-
-Framebuffer fb;
-
 static void VID_InitGL(void) {
     Cvar_RegisterVariable(&vid_mode);
     Cvar_RegisterVariable(&gl_npot);
     Cvar_RegisterVariable(&gl_ztrick);
 
+    // Must be first
+    appletInitialize();
+    appletLockExit(); // prevent HOME exit race
+
+    NWindow *win = nwindowGetDefault();
+/*
     framebufferCreate(&fb, win, 1280, 720, PIXEL_FORMAT_RGBA_8888, 1);
 	framebufferMakeLinear(&fb);
 
-    CreateUselessSDLWindow ();
+    Result rc = appletGetOperationMode();
 
-    setMesaConfig();
-    Con_Printf ("Initializing GL\n");
-    // Initialize EGL on the default window
+	// init 1920x1080 framebuffer to allow 1080p graphics when docked
+	if (rc == AppletOperationMode_Console)
+	{
+		// naievil -- close old frame buffer and start new one 
+		framebufferClose(&fb);
+		framebufferCreate(&fb, win, 1920, 1080, PIXEL_FORMAT_RGBA_8888, 1);
+		framebufferMakeLinear(&fb);
+
+		width = 1920;
+		height = 1080;
+		fullscreen = true;
+		fb_big = true;
+
+	} else if (rc == AppletOperationMode_Handheld) {
+		// undocked start, crop to 1280x720
+		// naievil -- revert to original video size
+		framebufferClose(&fb);
+		framebufferCreate(&fb, win, 1280, 720, PIXEL_FORMAT_RGBA_8888, 1);
+		framebufferMakeLinear(&fb);
+
+		width = 1280;
+		height = 720;
+		fullscreen = true;
+		fb_big = false;
+
+	}
+*/
+    setMesaConfig ();
+
+    // Now you can safely create EGL surface/context
     if (!InitEGL(win))
-        Sys_Error ("Failed to initialize EGL!\n");
-
-    // Load OpenGL routines using glad
-    if (!gladLoadGL((GLADloadfunc)eglGetProcAddress)) {
-        Sys_Error ("Failed to load glad!\n");
-    }
+        Sys_Error("Failed to initialize EGL!\n");
 
     Con_Printf ("GL Loaded\n");
 
@@ -299,9 +271,9 @@ static void VID_InitGL(void) {
 
     GL_ExtensionCheck_NPoT();
 
-    Con_Printf ("QGL Init:\n");
-
     QGL_Init();
+
+    Con_Printf ("QGL Init Sucess\n");
 
     glCullFace(GL_FRONT);
     glEnable(GL_TEXTURE_2D);
@@ -342,11 +314,8 @@ qboolean VID_SetMode(const qvidmode_t *mode, const byte *palette) {
     return true;
 }
 
-static SDL_Renderer *sdl_renderer;
-
 void VID_Init(const byte *palette) {
     static qboolean did_init = false;
-    int err;
     qvidmode_t *mode;
     const qvidmode_t *setmode;
 
@@ -366,8 +335,9 @@ void VID_Init(const byte *palette) {
     nummodes = 1;
 
     /* TODO: read config files first to avoid multiple mode sets */
-    VID_InitModeList();
     setmode = &modelist[0];
+
+    printf("VID_InitGL start\n");
 
     VID_InitGL();
     VID_SetMode(setmode, palette);
@@ -392,7 +362,7 @@ void GL_BeginRendering(int *x, int *y, int *width, int *height) {
 
 void GL_EndRendering(void) {
     glFlush();
-    eglSwapBuffers(s_display, s_surface);
+    //eglSwapBuffers(s_display, s_surface);
 }
 
 void VID_SetPalette(const byte *palette) {

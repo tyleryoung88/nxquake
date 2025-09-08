@@ -85,7 +85,6 @@ void userAppExit (void)
 void Sys_Printf(const char *fmt, ...) {
     va_list argptr;
     char text[MAX_PRINTMSG];
-    unsigned char *p;
 
     va_start(argptr, fmt);
     vsnprintf(text, sizeof(text), fmt, argptr);
@@ -307,26 +306,20 @@ void Sys_MakeCodeWriteable(void *start_addr, void *end_addr) {
 
 extern void Sys_InitSDL (void);
 
-static void UnfuckStdout(void) {
-    // consoleInit() has an internal static flag which makes it init devoptabs
-    // only once, so if you want to use the console again, you'll have to 
-    // restore them
-    extern const devoptab_t dotab_stdnull;
-    devoptab_list[STD_OUT] = &dotab_stdnull;
-    devoptab_list[STD_ERR] = &dotab_stdnull;
-}
-
 int Q_main(int argc, const char *argv[]);
 
 int main(int argc, char *argv[]) {
     static char *args[16];
     int i, nargs, havebase;
     DIR *dir;
-    struct dirent *d;
 
 #ifdef DEBUG
     nxlinkStdio();
 #endif
+
+    //consoleInit(NULL);
+
+    printf(">>> nxlink attached <<<\n");
 
     // just in case
     if (argc <= 0) {
@@ -398,10 +391,18 @@ int Q_main(int argc, const char **argv) {
         printf("QuakeWorld -- TyrQuake Version %s\n", stringify(TYR_VERSION));
 #endif
 
+    printf("Sys_InitSDL initialiazing\n");
     Sys_InitSDL();
+
+    printf("Sys_Init initialiazing\n");
     Sys_Init();
-    appletLockExit ();
+
+    //printf("userAppInit initialiazing\n");
+    //userAppInit();
+
+    printf("Host_Init initialiazing\n");
     Host_Init(&parms);
+    
 #endif /* SERVERONLY */
 
     /*
@@ -450,6 +451,7 @@ int Q_main(int argc, const char **argv) {
     // due to appletLockExit, main loop will terminate if user exits via HOME
 	// so we clean shit up
 	Sys_Quit ();
+    userAppExit();
 
     return 0;
 }

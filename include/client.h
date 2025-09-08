@@ -280,7 +280,6 @@ dlight_t *CL_AllocDlight(int key);
 
 /* The standard dynamic light colors */
 enum { DLIGHT_FLASH = 0, DLIGHT_BLUE = 1, DLIGHT_RED = 2, DLIGHT_PURPLE = 3 };
-const float dl_colors[4][4]; /* Use enums to reference the colors */
 
 void CL_DecayLights(void);
 void CL_RunParticles(void);

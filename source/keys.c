@@ -45,7 +45,7 @@ static qboolean lshift_down = false;
 static qboolean rshift_down = false;
 
 int edit_line = 0;
-static int history_line = 0;
+int history_line = 0;
 
 keydest_t key_dest;
 

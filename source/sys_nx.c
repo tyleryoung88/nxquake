@@ -391,16 +391,13 @@ int Q_main(int argc, const char **argv) {
         printf("QuakeWorld -- TyrQuake Version %s\n", stringify(TYR_VERSION));
 #endif
 
-    printf("Sys_InitSDL initialiazing\n");
     Sys_InitSDL();
 
-    printf("Sys_Init initialiazing\n");
     Sys_Init();
 
     //printf("userAppInit initialiazing\n");
     //userAppInit();
 
-    printf("Host_Init initialiazing\n");
     Host_Init(&parms);
     
 #endif /* SERVERONLY */

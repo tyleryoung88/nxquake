@@ -212,46 +212,12 @@ static void VID_InitGL(void) {
     appletLockExit(); // prevent HOME exit race
 
     NWindow *win = nwindowGetDefault();
-/*
-    framebufferCreate(&fb, win, 1280, 720, PIXEL_FORMAT_RGBA_8888, 1);
-	framebufferMakeLinear(&fb);
 
-    Result rc = appletGetOperationMode();
-
-	// init 1920x1080 framebuffer to allow 1080p graphics when docked
-	if (rc == AppletOperationMode_Console)
-	{
-		// naievil -- close old frame buffer and start new one 
-		framebufferClose(&fb);
-		framebufferCreate(&fb, win, 1920, 1080, PIXEL_FORMAT_RGBA_8888, 1);
-		framebufferMakeLinear(&fb);
-
-		width = 1920;
-		height = 1080;
-		fullscreen = true;
-		fb_big = true;
-
-	} else if (rc == AppletOperationMode_Handheld) {
-		// undocked start, crop to 1280x720
-		// naievil -- revert to original video size
-		framebufferClose(&fb);
-		framebufferCreate(&fb, win, 1280, 720, PIXEL_FORMAT_RGBA_8888, 1);
-		framebufferMakeLinear(&fb);
-
-		width = 1280;
-		height = 720;
-		fullscreen = true;
-		fb_big = false;
-
-	}
-*/
     setMesaConfig ();
 
     // Now you can safely create EGL surface/context
     if (!InitEGL(win))
         Sys_Error("Failed to initialize EGL!\n");
-
-    Con_Printf ("GL Loaded\n");
 
     eglSwapInterval(s_display, 1);
 
@@ -272,8 +238,6 @@ static void VID_InitGL(void) {
     GL_ExtensionCheck_NPoT();
 
     QGL_Init();
-
-    Con_Printf ("QGL Init Sucess\n");
 
     glCullFace(GL_FRONT);
     glEnable(GL_TEXTURE_2D);
@@ -362,7 +326,7 @@ void GL_BeginRendering(int *x, int *y, int *width, int *height) {
 
 void GL_EndRendering(void) {
     glFlush();
-    //eglSwapBuffers(s_display, s_surface);
+    eglSwapBuffers(s_display, s_surface);
 }
 
 void VID_SetPalette(const byte *palette) {

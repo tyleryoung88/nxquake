@@ -57,11 +57,9 @@ static void CompileShader(const char *src, GLuint idx, GLboolean frag) {
     GLint status;
     GLint length;
 
-    Sys_Printf ("CompileShader:\n");
-
     GLuint s = glCreateShader(frag ? GL_FRAGMENT_SHADER : GL_VERTEX_SHADER);
     if (s == 0) {
-        Sys_Printf("Could not create %s shader #%d!", frag ? "frag" : "vert", idx);
+        Sys_Error("Could not create %s shader #%d!", frag ? "frag" : "vert", idx);
     }
 
     glShaderSource(s, 1, &src, NULL);
@@ -71,7 +69,7 @@ static void CompileShader(const char *src, GLuint idx, GLboolean frag) {
         glGetShaderiv(s, GL_INFO_LOG_LENGTH, &length);
         glGetShaderInfoLog(s, sizeof(msg), NULL, msg);
         glDeleteShader(s);
-        Sys_Printf("Could not compile %s shader #%d:\n%s", frag ? "frag" : "vert", idx, msg);
+        Sys_Error("Could not compile %s shader #%d:\n%s\n", frag ? "frag" : "vert", idx, msg);
     }
 
     if (frag)
@@ -100,8 +98,6 @@ static inline void LinkShader(GLuint pidx, GLuint fidx, GLuint vidx, GLboolean t
 }
 
 void QGL_FreeShaders(void) {
-    Sys_Printf ("shader_loaded: %i\n", shaders_loaded);
-
     if (shaders_loaded) {
         for (int i = 0; i < 9; i++)
             glDeleteProgram(programs[i]);

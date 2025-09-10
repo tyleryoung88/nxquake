@@ -373,11 +373,6 @@ void Draw_Init(void) {
     const qpic8_t crosshair_pic = {8, 8, 8, crosshair_data};
     crosshair_texture = GL_LoadTexture_Alpha("crosshair", &crosshair_pic, false, 255);
 
-    GL_Bind(charset_texture);
-
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
     conback = Hunk_AllocName(sizeof(*conback), "qpic8_t");
     dpic = COM_LoadHunkFile("gfx/conback.lmp");
     if (!dpic)
@@ -392,6 +387,9 @@ void Draw_Init(void) {
     /* hack the version number directly into the pic */
     snprintf(version, sizeof(version), "%s", stringify(TYR_VERSION));
     Draw_ConbackString(pic, dpic->data, version);
+
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     conback->texnum = GL_LoadTexture("conback", pic, false);
     conback->sl = 0;
